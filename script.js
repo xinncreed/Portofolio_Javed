@@ -1,26 +1,59 @@
-function scrollToElement(elementSelector, instance = 0) {
-    // Select all elements that match the given selector
-    const elements = document.querySelectorAll(elementSelector);
-    // Check if there are elements matching the selector and if the requested instance exists
-    if (elements.length > instance) {
-        // Scroll to the specified instance of the element
-        elements[instance].scrollIntoView({ behavior: 'smooth' });
+// Scroll nav shadow
+const nav = document.querySelector('nav');
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
     }
+});
+
+// Smooth scroll for nav links and highlight active link
+const sections = document.querySelectorAll('section, header');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+function activateLinkOnScroll() {
+    let scrollPos = window.scrollY + window.innerHeight / 3;
+
+    sections.forEach((section, index) => {
+        if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
+            navLinks.forEach(link => link.classList.remove('active'));
+            if (navLinks[index]) navLinks[index].classList.add('active');
+        }
+    });
 }
 
-const link1 = document.getElementById("link1");
-const link2 = document.getElementById("link2");
-const link3 = document.getElementById("link3");
+window.addEventListener('scroll', activateLinkOnScroll);
+activateLinkOnScroll(); // initial call
 
-link1.addEventListener('click', () => {
-    scrollToElement('.header');
+// Scroll to element on nav click (override default jump)
+navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').substring(1);
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 });
 
-link2.addEventListener('click', () => {
-    // Scroll to the second element with "header" class
-    scrollToElement('.header', 1);
-});
+// Fade-in animation on scroll
+const faders = document.querySelectorAll('.fade-in');
 
-link3.addEventListener('click', () => {
-    scrollToElement('.column');
+const appearOptions = {
+    threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px"
+};
+
+const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+    entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('visible');
+        appearOnScroll.unobserve(entry.target);
+    });
+}, appearOptions);
+
+faders.forEach(fader => {
+    appearOnScroll.observe(fader);
 });
